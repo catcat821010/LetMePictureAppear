@@ -1,41 +1,49 @@
-KPOP產業現況與韓劇收視分佈情形，以及韓劇收視率與OST的相關性
-================
+---
+title: "KPOP產業現況與韓劇收視分佈情形，以及韓劇收視率與OST的相關性"
+output: github_document
+---
+##大綱
+1.分析議題背景
+2.分析動機
+3.使用資料
+4.爬取Gaon的DownloadChart
+5.爬取韓劇偶像廣場的KoreaDrama資料的程式碼
+6.處理資料
+7.假設
+8.資料分析與作圖
+9.結論
 
-大綱
-----
 
-1.分析議題背景 2.分析動機 3.使用資料 4.爬取Gaon的DownloadChart 5.爬取韓劇偶像廣場的KoreaDrama資料的程式碼 6.處理資料 7.假設 8.資料分析與作圖 9.結論
-
-分析議題背景
-------------
-
-韓國KPOP多為團體，以個人身份出道的較少，且在韓國有三大經紀公司SM、YG、JYP，這三家通常有較多的歌手們，提供的資源與音源成績都較好，再者，因為時代的進步，收聽音樂的習慣也相對應改變，串流比例愈來愈高，而且選秀節目變多，雖有韓團解散，但是新成立的應該愈多，可以想像這一塊產業是更競爭的。 台灣的戲劇每週會更新的只有星期一到星期五的八點檔以及假日的偶像劇，相對韓國分得很細，各電視台星期一到五晚上8點有日日劇，星期一二晚上10點有月火劇，星期三四晚上10點有水木劇，星期五六晚上10點有金土劇，星期六日晚上8點有週末劇，除了不同劇在不同播出時間有不同名稱外，它們劇的性質以及收視族群也不太一樣，日日劇、週末劇集數通常較長，族群多為中老年人，且平均集數較長，月火劇、水木劇、金土劇則是多為青壯年人，且平均集數較短。 除了韓劇收視率以及音源排名個別分析外，有種歌曲在韓劇裡面唱的叫做OST，又稱原聲帶，電視劇為其的產出方式之一，OST是韓劇與音樂間重要的存在，收視率帶動音源排名、串流、下載的上升，反之也有影響。 韓劇第八集定律是過往韓劇都會在第八集有第一次的吻戲，但現今吻戲集數有向前發生的趨勢。
-
-``` r
+## 分析議題背景
+  韓國KPOP多為團體，以個人身份出道的較少，且在韓國有三大經紀公司SM、YG、JYP，這三家通常有較多的歌手們，提供的資源與音源成績都較好，再者，因為時代的進步，收聽音樂的習慣也相對應改變，串流比例愈來愈高，而且選秀節目變多，雖有韓團解散，但是新成立的應該愈多，可以想像這一塊產業是更競爭的。
+  台灣的戲劇每週會更新的只有星期一到星期五的八點檔以及假日的偶像劇，相對韓國分得很細，各電視台星期一到五晚上8點有日日劇，星期一二晚上10點有月火劇，星期三四晚上10點有水木劇，星期五六晚上10點有金土劇，星期六日晚上8點有週末劇，除了不同劇在不同播出時間有不同名稱外，它們劇的性質以及收視族群也不太一樣，日日劇、週末劇集數通常較長，族群多為中老年人，且平均集數較長，月火劇、水木劇、金土劇則是多為青壯年人，且平均集數較短。
+  除了韓劇收視率以及音源排名個別分析外，有種歌曲在韓劇裡面唱的叫做OST，又稱原聲帶，電視劇為其的產出方式之一，OST是韓劇與音樂間重要的存在，收視率帶動音源排名、串流、下載的上升，反之也有影響。
+  韓劇第八集定律是過往韓劇都會在第八集有第一次的吻戲，但現今吻戲集數有向前發生的趨勢。
+ 
+```{r warning=F,message=F}
 #以播出時間分類韓劇類型
 type<-data.frame(c("","晚上8點","晚上10點"),c("星期一","日日劇","月火劇"),c("星期二","日日劇","月火劇"),c("星期三","日日劇","水木劇"),c("星期四","日日劇","水木劇"),c("星期五","日日劇","金土劇"),c("星期六","週末劇","金土劇"),c("星期日","週末劇",""))
 knitr::kable(type)
 ```
 
-| c......晚上8點....晚上10點.. | c..星期一....日日劇....月火劇.. | c..星期二....日日劇....月火劇.. | c..星期三....日日劇....水木劇.. | c..星期四....日日劇....水木劇.. | c..星期五....日日劇....金土劇.. | c..星期六....週末劇....金土劇.. | c..星期日....週末劇...... |
-|:-----------------------------|:--------------------------------|:--------------------------------|:--------------------------------|:--------------------------------|:--------------------------------|:--------------------------------|:--------------------------|
-|                              | 星期一                          | 星期二                          | 星期三                          | 星期四                          | 星期五                          | 星期六                          | 星期日                    |
-| 晚上8點                      | 日日劇                          | 日日劇                          | 日日劇                          | 日日劇                          | 日日劇                          | 週末劇                          | 週末劇                    |
-| 晚上10點                     | 月火劇                          | 月火劇                          | 水木劇                          | 水木劇                          | 金土劇                          | 金土劇                          |                           |
+ 
+  
+## 分析動機
+  本人在2013年踏入韓國演藝圈這塊深不可見的沼澤，從初期涉略韓綜到中期韓劇到現在KPOP，韓綜在2014、2015年多以食物相關，近年來愈多生存實境節目，淘汰選拔男團女團人選。韓劇方面，過去收視率高的往往在有線台三台，但是近年來無線台的收視率也有感提昇，就自己觀看的經驗，題材、劇本在無線台比在有線台更沒有限制。而KPOP在最初真的是聽韓劇好聽的OST再去找的，如今認識比較多女團，對這一圈也稍微有些涉略，知道哪些人是在出專輯後就橫掃音源榜的人等等，想找出更多韓劇圈的相關性數據來印證這幾年有經歷過的一切XDD。
 
-分析動機
---------
 
-本人在2013年踏入韓國演藝圈這塊深不可見的沼澤，從初期涉略韓綜到中期韓劇到現在KPOP，韓綜在2014、2015年多以食物相關，近年來愈多生存實境節目，淘汰選拔男團女團人選。韓劇方面，過去收視率高的往往在有線台三台，但是近年來無線台的收視率也有感提昇，就自己觀看的經驗，題材、劇本在無線台比在有線台更沒有限制。而KPOP在最初真的是聽韓劇好聽的OST再去找的，如今認識比較多女團，對這一圈也稍微有些涉略，知道哪些人是在出專輯後就橫掃音源榜的人等等，想找出更多韓劇圈的相關性數據來印證這幾年有經歷過的一切XDD。
+## 使用資料
+[Gaon](http://gaonchart.co.kr/main/section/chart/online.gaon?nationGbn=T&serviceGbn=ALL)
+[韓國偶像劇場](http://kr.dorama.info/drama/d_rate.php)
+DownloadChart為韓國Gaon的2011-03-06至2017-05-20每週下載的單曲排名TOP1~100
+StreamingChart為韓國Gaon的2011-03-06至2017-05-20每週線上串流收聽的單曲排名TOP1~100
+DigitalChartWeek為韓國Gaon的2009-12-27至2017-05-20每週各個榜單總和的單曲排名TOP1~100
+KoreaDrama為韓劇偶像廣場2010season4至2016season4時期間，韓國有播放的韓劇收視率資料
+以下兩個Chunk為爬取以上四個資料的程式碼
 
-使用資料
---------
-
-[Gaon](http://gaonchart.co.kr/main/section/chart/online.gaon?nationGbn=T&serviceGbn=ALL) [韓國偶像劇場](http://kr.dorama.info/drama/d_rate.php) DownloadChart為韓國Gaon的2011-03-06至2017-05-20每週下載的單曲排名TOP1<sub>100\\ StreamingChart為韓國Gaon的2011-03-06至2017-05-20每週線上串流收聽的單曲排名TOP1</sub>100 DigitalChartWeek為韓國Gaon的2009-12-27至2017-05-20每週各個榜單總和的單曲排名TOP1~100 KoreaDrama為韓劇偶像廣場2010season4至2016season4時期間，韓國有播放的韓劇收視率資料 以下兩個Chunk為爬取以上四個資料的程式碼
 
 爬取Gaon的DownloadChart、StreamingChart、DigitalChartWeek資料的程式碼
-
-``` r
+```{r warning=F,message=F}
 library(rvest)
 library(stringr)
 library(data.table)
@@ -146,8 +154,7 @@ write.table(DGTData,file="DiritalChartWeek.csv",sep="\t",row.names = F,col.names
 ```
 
 爬取韓劇偶像廣場的KoreaDrama資料的程式碼
-
-``` r
+```{r warning=F,message=F}
 #此韓劇收視率網站比較不制式化，有較詳細說明
 library(rvest)
 library(stringr)
@@ -272,11 +279,12 @@ dimnames(KoreaData)[[2]][4]<-"EP"
 dimnames(KoreaData)[[2]][5]<-"Date"
 dimnames(KoreaData)[[2]][6]<-"Rate"
 write.table(KoreaData,file="KoreaDrama.csv",sep="\t",row.names = F,col.names = T)
+    
+
 ```
 
 載入使用資料，避免每次爬取所以先存一次檔案
-
-``` r
+```{r warning=F,message=F}
 library(readr)
 DownloadChart <- read_delim("~/Documents/GitHub/CGUIM_BigData_HW6-star/DownloadChart.csv", 
     "\t", escape_double = FALSE, trim_ws = TRUE)
@@ -288,14 +296,29 @@ KoreaDrama <- read_delim("~/Documents/GitHub/CGUIM_BigData_HW6-star/KoreaDrama.c
     "\t", escape_double = FALSE, trim_ws = TRUE)
 ```
 
-資料處理與清洗
---------------
-
-DownLoadChart、StreamingChart、DigitalChart三個表都將DateRange及SingerAlbum欄位內容分開，故原表再加上四個欄位，FirstDate、SeventhDate、Singer、Album，分別是此星期的第一天、此星期的第七天、歌手名稱、專輯名稱。 Step1:將三個表的DateRange欄位分開 Step2:將三個表的SingerAlbum欄位分開 Step3:將分開後產生的四個欄位儲存在一個新的資料框 Step4:新的欄位命名 Step5:合併到原資料框 Step6:將欄位FirstDate及SeventhDate改成日期形式，並補充下方作圖常常遺失的儲存格值 收視率的資料只想留著兩種，一個是完整的資料，另一個是停播的資料（集數與收視率改為NA，其他欄位都有），以下步驟會朝這兩個目標做以及清理資料，由於收視率資料比較複雜，下面步驟將作詳細說明。 step1:將重複的資料只顯示一筆 step2:由於完整資料與停播資料儲存格皆有值，所以大膽NA沒有關係，在這邊是清理掉不小心抓的平均 step3:有些集數以周次表示成１週、２週，所以將週作為字串分割保留數字 step4:EP欄位排序後觀察出特別篇都有"\*\*"的字眼，在此暫不考慮 step5:Rate欄位有當集有播但沒有資料的，避免與停播資料搞混分析，故移除 step6:Rate欄位只保留數值，且有部分儲存格會註明收視率低的原因：奧運直播等等，兩個一併清理 step7:將EP及Rate欄位轉成數值 step8:新增星期欄位 step9:移除停播的韓劇資料 step10:以星期欄位判定韓劇類型ing
-
+## 資料處理與清洗
+  DownLoadChart、StreamingChart、DigitalChart三個表都將DateRange及SingerAlbum欄位內容分開，故原表再加上四個欄位，FirstDate、SeventhDate、Singer、Album，分別是此星期的第一天、此星期的第七天、歌手名稱、專輯名稱。
+  Step1:將三個表的DateRange欄位分開
+  Step2:將三個表的SingerAlbum欄位分開
+  Step3:將分開後產生的四個欄位儲存在一個新的資料框
+  Step4:新的欄位命名
+  Step5:合併到原資料框
+  Step6:將欄位FirstDate及SeventhDate改成日期形式，並補充下方作圖常常遺失的儲存格值
+  收視率的資料只想留著兩種，一個是完整的資料，另一個是停播的資料（集數與收視率改為NA，其他欄位都有），以下步驟會朝這兩個目標做以及清理資料，由於收視率資料比較複雜，下面步驟將作詳細說明。
+  step1:將重複的資料只顯示一筆
+  step2:由於完整資料與停播資料儲存格皆有值，所以大膽NA沒有關係，在這邊是清理掉不小心抓的平均
+  step3:有些集數以周次表示成１週、２週，所以將週作為字串分割保留數字
+  step4:EP欄位排序後觀察出特別篇都有"**"的字眼，在此暫不考慮
+  step5:Rate欄位有當集有播但沒有資料的，避免與停播資料搞混分析，故移除
+  step6:Rate欄位只保留數值，且有部分儲存格會註明收視率低的原因：奧運直播等等，兩個一併清理
+  step7:將EP及Rate欄位轉成數值
+  step8:新增星期欄位
+  step9:移除停播的韓劇資料
+  step10:以星期欄位判定韓劇類型ing
+  
+  
 處理資料
-
-``` r
+```{r warning=F,message=F}
 library(data.table)
 library(lubridate)
 library(dplyr)
@@ -432,8 +455,7 @@ write.table(NewKoreaDrama,file="NewKoreaDrama.csv",sep="\t",row.names = F,col.na
 ```
 
 為了避免前面的載入太久，所以將整理好的表再載入一次，方便進行作業
-
-``` r
+```{r warning=F,message=F}
 library(readr)
 NewDigitalChart <- read_delim("~/Documents/GitHub/Report-B0344154/NewDigitalChart.csv", 
     "\t", escape_double = FALSE, trim_ws = TRUE)
@@ -443,17 +465,17 @@ NewStreamingChart <- read_delim("~/Documents/GitHub/Report-B0344154/NewStreaming
     "\t", escape_double = FALSE, trim_ws = TRUE)
 NewKoreaDrama <- read_delim("~/Documents/GitHub/Report-B0344154/NewKoreaDrama.csv", 
     "\t", escape_double = FALSE, trim_ws = TRUE)
+
 ```
+## 假設
+1.韓國音樂產業的競爭逐漸降低
+2.根據韓劇第八集定律有吻戲會造就他比平均收視了來的高的收視率
+3.因為日日劇、週末劇多為長輩看的，湯常會有較長集數，且時段播出較早會有較高的平均收視，是否為真？
+4.因為月火劇、水木劇多為年輕族群看的，這兩種類型的劇與OST相關性較高，是否兩者互為正相關而帶動收視？
+5.找出金土劇的相關性或特點
 
-假設
-----
-
-1.韓國音樂產業的競爭逐漸降低 2.根據韓劇第八集定律有吻戲會造就他比平均收視了來的高的收視率 3.因為日日劇、週末劇多為長輩看的，湯常會有較長集數，且時段播出較早會有較高的平均收視，是否為真？ 4.因為月火劇、水木劇多為年輕族群看的，這兩種類型的劇與OST相關性較高，是否兩者互為正相關而帶動收視？ 5.找出金土劇的相關性或特點
-
-資料分析與作圖
---------------
-
-``` r
+## 資料分析與作圖
+```{r warning=F,message=F}
 library(ggplot2)
 library(treemap)
 library(plotly)
@@ -488,11 +510,6 @@ ggplot() +
     labs(x="年份",y="平均次數")+
     scale_color_manual(name="類型",labels = c("下載", "串流"), values = c("#CC0000", "#0000CC")) +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
-
-``` r
 ggsave("A1-1.png", width = 20, height = 15, units = "cm")
 #圖A1-2，2011年串流與下載趨勢，可看出2011年開始串流一直上升，下載先下降後持平停滯
 ggplot() + 
@@ -508,11 +525,6 @@ ggplot() +
     labs(x="年份",y="平均次數")+
     scale_color_manual(name="類型",labels = c("下載", "串流"), values = c("#CC0000", "#0000CC")) +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-2.png)
-
-``` r
 ggsave("A1-2.png", width = 20, height = 15, units = "cm")
 #圖A1-3，2017年串流與下載資料點，可看出2017年串流比下載高出50倍之多
 ggplot() + 
@@ -530,11 +542,6 @@ ggplot() +
     labs(x="年份",y="平均次數")+
     scale_color_manual(name="類型",labels = c("下載", "串流"), values = c("#CC0000", "#0000CC")) +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-3.png)
-
-``` r
 ggsave("A1-3.png", width = 20, height = 15, units = "cm")
 
 
@@ -572,11 +579,6 @@ ggplot(data=yearFullSong,aes(x = yearFullSong,y =meanWeek))+
     geom_smooth(method='lm')+
     geom_text(aes(label = year),check_overlap = TRUE,vjust = 0, nudge_y = 0.5)+
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-4.png)
-
-``` r
 ggsave("A1-4.png", width = 20, height = 15, units = "cm")
 
 
@@ -668,12 +670,6 @@ treemap(MeanRateByDrama,
       fontfamily.labels = "Microsoft JhengHei",
       fontfamily.legend = "Microsoft JhengHei")
 dev.off()
-```
-
-    ## quartz_off_screen 
-    ##                 2
-
-``` r
 #統計各種劇類型相關數據
 dramaTotalEP<-group_by(NewKoreaDramaNoStop,ChineseDramaName,KoreaDramaName,typeBytime) %>%
   summarise(nEP=n(),meanRate=mean(Rate))
@@ -701,11 +697,6 @@ ggplot(data=dramaTotalDramaByTypeTime,aes(x = reorder(typeBytime,meanEP),y =mean
     labs(x="類型",y="平均集數")+
     scale_fill_manual(values = c('#A9A9A9', "#FFCC66")) +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="none")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-5.png)
-
-``` r
 ggsave("A2-1.png", width = 20, height = 15, units = "cm")
 
 
@@ -733,11 +724,6 @@ ggplot(data=EP8VSMean,aes(x = reorder(typeBytime,value),y =value,fill=variable))
     labs(x="類型",y="收視率")+
     scale_fill_manual(name="收視率",labels = c("EP8", "平均"),values = c("#FFCC66",'#A9A9A9')) +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-6.png)
-
-``` r
 ggsave("A2-4.png", width = 20, height = 15, units = "cm")
 #EP8韓劇與其平均差距heatmap
 ggplot(KissEP8, aes(reorder(year(Date.y),year(Date.y)), reorder(typeBytime,EP8Rate))) + 
@@ -747,11 +733,6 @@ ggplot(KissEP8, aes(reorder(year(Date.y),year(Date.y)), reorder(typeBytime,EP8Ra
     labs(x="年份",y="類型")+
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")+
     theme(legend.title=element_blank())
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-7.png)
-
-``` r
  ggsave("A2-6.png", width = 20, height = 15, units = "cm")
 
 
@@ -785,11 +766,6 @@ ggplot(data=meanRateByTypeTime,aes(x = reorder(typeBytime,meanRate),y =meanRate,
     labs(x="類型",y="平均收視率")+
     scale_fill_manual(values = c('#A9A9A9', "#FFCC66")) +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="none")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-8.png)
-
-``` r
 ggsave("A2-5.png", width = 20, height = 15, units = "cm")
 #
 dramaByTVTypeTime<-NULL
@@ -871,11 +847,6 @@ ggplot(data=typeToTotalWeek,aes(x=reorder(typeBytime,sumWeek),y=sumWeek,fill=for
     labs(x="類型",y="總週數")+
     scale_fill_manual(values = c('#A9A9A9', "#FFCC66")) +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="none")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-9.png)
-
-``` r
 ggsave("A3-1.png", width = 20, height = 15, units = "cm")
 
 #可看出水木劇與月火劇在綁數量較多，特別再篩選出來做調查
@@ -890,11 +861,6 @@ ggplot(data=dramaMonToThu,aes(x = meanRate,y =continuousWeek,colour = typeBytime
     geom_smooth(method='lm',se=F)+
     scale_color_discrete(name="類型") +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-10.png)
-
-``` r
 ggsave("A3-2.png", width = 20, height = 15, units = "cm")
 #圖A3-3，收視率與OST在榜週數散布圖
 ggplot(data=OSTData,aes(x = meanRate,y =continuousWeek,colour = typeBytime))+ 
@@ -904,11 +870,6 @@ ggplot(data=OSTData,aes(x = meanRate,y =continuousWeek,colour = typeBytime))+
     geom_smooth(method='lm',se=F)+
     scale_color_discrete(name="類型") +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-11.png)
-
-``` r
 ggsave("A3-3.png", width = 20, height = 15, units = "cm")
 
 #對斜率最高的金土劇做調查發現都是無線台的韓劇
@@ -939,11 +900,6 @@ ggplot(data=dramaFriSatSummary,aes(x=reorder(TV,nDrama),y=nDrama,fill=forColor))
     labs(x="電視台",y="數目")+
     scale_fill_manual(values = c('#A9A9A9', "#FFCC66")) +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="none")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-12.png)
-
-``` r
 ggsave("A3-5.png", width = 20, height = 15, units = "cm")
 #為了看出兩家無線電視台的收視率趨勢
 dramaFriSat1<-dramaFriSat[c(1:12,17:34),]
@@ -955,15 +911,16 @@ ggplot(data=dramaFriSat1,aes(x = Date,y =meanRate,colour = TV))+
     geom_smooth(se=F)+
     scale_color_discrete(name="電視台") +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),text = element_text(family = "Microsoft JhengHei"),legend.position="right")
-```
-
-![](README_files/figure-markdown_github/unnamed-chunk-7-13.png)
-
-``` r
  ggsave("A3-6.png", width = 20, height = 15, units = "cm")
+ 
+ 
 ```
 
-結論
-----
+## 結論
+1.平均在榜上時間久，可能表示音源很強，但也是榜外者競爭不足所致
+2.驗證了第八集定律收視率並沒有比平均收視率高
+3.日日劇、週末劇多為長輩觀賞，有集數較長、平均收視率較高之特性
+4.水木劇、月火劇多為年輕族群觀賞，集數不長，但為OST銷出的大宗
+5.金土劇多為無線台韓劇特有播放時段，在近期收視率也成長的趨勢
 
-1.平均在榜上時間久，可能表示音源很強，但也是榜外者競爭不足所致 2.驗證了第八集定律收視率並沒有比平均收視率高 3.日日劇、週末劇多為長輩觀賞，有集數較長、平均收視率較高之特性 4.水木劇、月火劇多為年輕族群觀賞，集數不長，但為OST銷出的大宗 5.金土劇多為無線台韓劇特有播放時段，在近期收視率也成長的趨勢
+  
